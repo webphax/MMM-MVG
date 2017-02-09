@@ -24,7 +24,9 @@ Sample minimum configuration entry for your `~/MagicMirror/config/config.js`:
         module: 'MMM-MVG',
         position: 'top_right',
         config: {
-			url: 'http://www.mvg-live.de/ims/dfiStaticAuswahl.svc?haltestelle=hackerbr%FCcke&ubahn=checked&bus=checked&tram=checked&sbahn=checked',		// Configure your search query via http://www.mvg-live.de/ims/dfiStaticAuswahl.svc			
+			url: 'http://www.mvg-live.de/ims/dfiStaticAuswahl.svc?haltestelle=hackerbr%FCcke&ubahn=checked&bus=checked&tram=checked&sbahn=checked',		// Configure your search query via http://www.mvg-live.de/ims/dfiStaticAuswahl.svc	
+            maxConn: 5,     // How many connections would you like to see? (Maximum: 10)
+			reload: 30   	// How often should the information be updated? (In seconds)		
         }
     },
     
