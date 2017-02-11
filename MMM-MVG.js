@@ -19,12 +19,14 @@ Module.register("MMM-MVG",{
 		this.mvgData = "";
 
 		this.sendSocketNotification("ADD_ITEMS", {
+			identifier: this.identifier,
 			url: this.config.url
 		});
 
 		setInterval(
 			function(){
 				self.sendSocketNotification("ADD_ITEMS", {
+					identifier: this.identifier,
 					url: self.config.url
 			});}
 			,this.config.reload * 1000);
@@ -32,8 +34,8 @@ Module.register("MMM-MVG",{
 
 	// Override socket notification handler.
 	socketNotificationReceived: function (notification, payload) {
-		if (notification === "ITEMS_ADDED") {
-			this.mvgData = payload
+		if (notification === "ITEMS_ADDED" && payload.identifier === this.identifier) {
+			this.mvgData = payload.data
 		} else {
 			Log.log(this.name + " received an unknown socket notification: " + notification);
 		}

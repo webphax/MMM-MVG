@@ -10,20 +10,23 @@ module.exports = NodeHelper.create({
     // Override socketNotificationReceived method.
 	socketNotificationReceived: function(notification, payload) {
 		if (notification === "ADD_ITEMS") {
-			this.sendBackData(payload.url);
+			this.sendBackData(payload);
 		}
 	},
 
     /* sendBackData()
 	 */
-	sendBackData: function(url) {
+	sendBackData: function(payload) {
         var self = this;
         request({
-            url: url,
+        	url: payload.url,
             encoding: 'binary',
         }, function (error, response, body) {
             if (!error && response.statusCode == 200) {
-                self.sendSocketNotification("ITEMS_ADDED", body);
+                self.sendSocketNotification("ITEMS_ADDED", {
+					identifier: payload.identifier,
+					data: body
+				});
             }
         })
 	}
