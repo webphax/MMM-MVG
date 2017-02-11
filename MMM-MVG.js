@@ -1,9 +1,13 @@
 Module.register("MMM-MVG",{
 	// Default module config.
 	defaults: {
-			url: "http://www.mvg-live.de/ims/dfiStaticAnzeige.svc?haltestelle=hackerbr%FCcke&ubahn=checked&bus=checked&tram=checked&sbahn=checked",
-			maxConn: 5,     // How many connections would you like to see? (Maximum: 10)
-			reload: 30   	// How often should the information be updated? (In seconds)
+			stations: [
+				{
+					url: "http://www.mvg-live.de/ims/dfiStaticAnzeige.svc?haltestelle=hackerbr%FCcke&ubahn=checked&bus=checked&tram=checked&sbahn=checked",
+				},
+			],
+			maxConn: 5,
+			reload: 30
 	},
 
 	getStyles: function () {
@@ -16,18 +20,18 @@ Module.register("MMM-MVG",{
 
 		Log.log("Starting module: " + this.name);
 
-		this.mvgData = "";
+		this.mvgData = [];
 
 		this.sendSocketNotification("ADD_ITEMS", {
 			identifier: this.identifier,
-			url: this.config.url
+			stations: this.config.stations
 		});
 
 		setInterval(
 			function(){
 				self.sendSocketNotification("ADD_ITEMS", {
-					identifier: this.identifier,
-					url: self.config.url
+					identifier: self.identifier, // CHECK self vs this
+					stations: self.config.stations
 			});}
 			,this.config.reload * 1000);
 	},
@@ -39,27 +43,22 @@ Module.register("MMM-MVG",{
 		} else {
 			Log.log(this.name + " received an unknown socket notification: " + notification);
 		}
-
 		this.updateDom(1000);
 	},
 
-	header: function() {
+	// generate Header element and show station name
+	header: function(body) {
         var header = document.createElement("header");
 		header.className = "align-left";
-        header.innerHTML = unescape((this.config.url.split('haltestelle=')[1]||'').split('&')[0]);
+        header.innerHTML = body.match(/<title[^>]*>([^<]+)<\/title>/)[1].substr(10);;
         return header;
     },
 
 	connectionTable: function(connections) {
-
-		var parsedData = [{
-			line: "",
-			station: "",
-			inMin: "",
-		},];
+		var parsedData = [];
 
 		var parser = new DOMParser();
-		var doc = parser.parseFromString(this.mvgData, "text/html");
+		var doc = parser.parseFromString(connections, "text/html");
 
 		var rows = doc.getElementsByTagName('tr');
 		for(var cnt = 1; cnt < rows.length; cnt++) {
@@ -101,7 +100,7 @@ Module.register("MMM-MVG",{
 		);
 
         var table = document.createElement("table");
-        table.classList.add("small", "table");
+        table.classList.add("small", "table", "mvg_table");
         table.border = '0';
 
         if (parsedData.length > 0) {
@@ -147,16 +146,17 @@ Module.register("MMM-MVG",{
         return loader;
     },
 
-
 	// Override dom generator.
     getDom: function() {
 		var wrapper = document.createElement("div");
-        wrapper.appendChild(this.header());
-        if (this.mvgData) {
-            wrapper.appendChild(this.connectionTable(this.mvgData));
-        } else {
-            wrapper.appendChild(this.loader());
-        }
+		for(var i = 0; i < this.mvgData.length; i++) {
+			wrapper.appendChild(this.header(this.mvgData[i]));
+			if (this.mvgData[i]) {
+				wrapper.appendChild(this.connectionTable(this.mvgData[i]));
+			} else {
+				wrapper.appendChild(this.loader());
+			}
+		}
         return wrapper;
     },
 });

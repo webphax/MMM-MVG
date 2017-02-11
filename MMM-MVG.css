@@ -1,3 +1,7 @@
 .MMM-MVG .connectionRow td {
     padding:0 5px 0 5px;
 }
+
+.MMM-MVG .mvg_table {
+    padding-bottom: 10px;
+}
